@@ -1,0 +1,21 @@
+scheme -> haskell -> 
+https://repl.it/languages/scheme
+
+
+
+42
+3.14
+#t
+#f - only this is false in scheme
+(operation operands...)
+(+ (* 2 2) (- 3 1))
+
+predicates - true or false return value
+(define square (lambdda (x) (* x x)) - lambda functions
+(define (square x) (*x x))
+(define (sq n) (
+ ( lambda(x) (* x x) )
+ n )
+)
+
+http://www.agner.org/optimize/

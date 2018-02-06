@@ -1,0 +1,90 @@
+#lang scheme
+;;
+;; problem 3.
+;;
+(define (tree? t)
+  (or (null? t)
+      (and (list? t) (= 3 (length t))
+           (tree? (cadr t))
+           (tree? (caddr t)))))
+
+(define make-tree list)
+(define empty-tree '())
+(define root-tree car)
+(define left-tree cadr)
+(define right-tree caddr)
+(define empty-tree? null?)
+(define (leaf? t)
+  (and (list? t) (= 3 (length t))
+       (null? (cadr t))
+       (null? (caddr t))))
+
+;; for racket namespaces :\
+(define-namespace-anchor a)
+(define ns (namespace-anchor->namespace a))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; 6p
+(define (expr->tree e)
+  (cond ((null? e) '())
+        ((or (symbol? e) (number? e) ) (make-tree e '() '()))
+        ((list? e) (make-tree (car e) (expr->tree (cadr e)) (expr->tree (caddr e))))
+        (else e)))
+;; 5p
+(define (tree-eval t v)
+  (cond ((null? t) #f)
+        ((number? t) t)
+        ((leaf? t) (if (eq? (root-tree t) 'x) v (root-tree t)))
+        ((list? t) ((eval (car t) ns) (tree-eval (left-tree t) v) (tree-eval (right-tree t) v)))
+        (else v)
+        ))
+;; 6p
+(define (deriv exp var)
+  (define (variable? x) (symbol? x))
+  (define (same-variable? v1 v2)
+      (and (symbol? v1) (symbol? v2) (eq? v1 v2)))
+
+  (define (make-sum a1 a2) (list '+ a1 a2))
+  (define (make-product m1 m2) (list '* m1 m2))
+
+  (define (sum? x)
+      (and (pair? x) (eq? (car x) '+)))
+  (define (product? x)
+    (and (pair? x) (eq? (car x) '*)))
+
+  (cond ((number? exp) 0) ;; d of number is 0
+        ((variable? exp)
+         (if (same-variable? exp var)
+             1 ;; x' = 1
+             0)) ;; y' = 0
+        ((sum? exp) ;; d of sum is a sum of derivatives of left and right operands 
+         (make-sum (deriv (cadr exp) var)
+                   (deriv (caddr exp) var)))
+        ((product? exp) ;; d of product
+         (make-sum      ;; is a sum of
+           (make-product (cadr exp) ;; product of 
+                         (deriv (caddr exp) var))
+           (make-product (deriv (cadr exp) var)
+                         (caddr exp))))
+        (else
+         'error)))
+
+(define (tree-derive t)
+  (deriv (flatten t) 'x))
+
+
+;; Tests
+(tree-eval  (expr->tree '(* (* (* 1 (- (+ x 1) 1)) 2) (+ x (* 0 x)))) 5) ; -> 50
+
+(define f '(* x x))
+;f
+(define t (expr->tree f))
+;t
+(tree-eval t 5); -> 25
+
+(define t1 (tree-derive t))
+;t1
+(tree-eval t1 5); -> 10

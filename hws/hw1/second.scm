@@ -1,0 +1,130 @@
+;; for tests
+(require rackunit rackunit/text-ui)
+
+;;
+
+(define (find-max x last-max)
+  (if (< x 10)
+	 ; one digit
+	 (if (> x last-max) x last-max)
+         ; more digits
+	 ; (if... find max)
+         (if (> (remainder x 10) last-max)
+             (find-max (quotient x 10) (remainder x 10))
+             (find-max (quotient x 10) last-max)
+         )
+  )
+)
+;;
+;; LISTS HELPERS
+;; 
+
+;; number -> reversed list
+(define (number->reversed-list x)
+  (if (< x 10)
+    (cons x null)
+    (cons (remainder x 10) (number->reversed-list (quotient x 10)))
+  )
+)
+;; reverse
+(define (reverse-list lst)
+  (foldl cons '() lst)
+)
+
+;; number -> list
+(define (number->list x)
+  (reverse-list (number->reversed-list x))
+)
+
+;; list -> number
+(define (list->number lst)
+  (define (helper lst result)
+    (if (null? lst)
+      result
+      (helper (cdr lst) (+ (* 10 result) (car lst)))
+    )
+  )
+  (helper lst 0)
+)
+
+;; find max in list
+(define (get-max lst)
+  (define (helper lst last-max)
+    (if (null? lst)
+      last-max
+      (if (> (car lst) last-max)
+        (helper (cdr lst) (car lst))
+        (helper (cdr lst) last-max)
+      )
+    )
+  )
+  (helper lst (car lst))
+)
+
+;; remove first element with value
+(define (rm value lst)
+  (if (null? lst)
+    null
+    (if (= value (car lst))
+      (rm -1 (cdr lst));; value -> remove every
+      (cons (car lst) (rm value (cdr lst)))
+    )
+  )
+)
+
+;;
+;; Problem functions
+;;
+
+;; getting next value
+(define (next x)
+  (define max-value (get-max (number->list x)))
+  (* max-value
+     (list->number (rm max-value (number->list x)))
+  )
+  ; get max
+  ; pop max
+  ; -> max*popped
+)
+
+;; reduce function
+(define (reduce x)
+  (if (and (< x 10) (>= x 0))
+    x
+    (reduce (next x))
+  )
+)
+
+;;
+;; Bonus
+;;
+
+;; This algorithm will be completed for every number > 0, because on each step, the number decreases(for example we have on some step number 999 - on next step we are getting 99*9=891)
+;; i.e. for each x(i) >= 10 ,  x(i+1) < x(i). We can not find a number >= 10 which will break this rule.
+
+
+;;
+;; TESTS
+;;
+
+;(print (find-max 18278495 (remainder 12745 10)))
+;(print (number->list 123945))
+;(print (list->number (number->list 123945)))
+;(print (get-max (number->list 123945)))
+;(print (rm 9 (number->list 152152152152999)))
+
+(define reduce-tests
+  (test-suite
+   "Tests for reduce"
+
+   (check = (reduce 9) 9)
+   (check = (reduce 27) 4)
+   (check = (reduce 757) 5)
+   (check = (reduce 1234) 8)
+   (check = (reduce 26364) 8)
+   (check = (reduce 432969) 0)
+   (check = (reduce 1234584) 8)
+   (check = (reduce 91273716) 6)
+   ))
+
+(run-tests reduce-tests)

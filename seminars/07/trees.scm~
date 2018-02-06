@@ -1,0 +1,57 @@
+#lang racket
+;; ex 2.3////
+(define (count-leaves x)
+  (cond ((null? x) 0)
+        ((list? x) (+ (count-leaves (car x))
+                      (count-leaves (cdr x))))
+        (else 1)))
+ 
+
+
+(define (scale-tree t x)
+  (cond ((null? t) '())
+        ((list? t) (cons (scale-tree (car t) x)
+                         (scale-tree (cdr t) x)))
+        (else (* x t))))
+(define (scale-tree-map t x)
+  (map (lambda(sub) (if (list? sub)
+                        (scale-tree-map sub x)
+                        (* x sub)
+                        ))
+       t))
+
+(define (ssquare-tree t)
+  (map (lambda (sub) (if (list? sub)
+                         (square-tree sub)
+                         (* sub sub)))
+       t))
+
+(define (tree-map f t)
+  (cond ((null? t) '())
+        ((list? t) (cons (tree-map f (car t))
+                         (tree-map f (cdr t))))
+        (else (f t))))
+(define (square x)
+  (* x x))
+(define (square-tree tree)
+  (tree-map square tree))
+
+(define (accumulate combiner null-value l)
+  (if (null? l) null-value
+      (combiner (car l)
+                (accumulate combiner null-value (cdr l)))))
+
+(accumulate + 0 (list 1 2 3 4 5))
+
+(define (enumerate-interval low high)
+  (if (> low high) '()
+      (cons low (enumerate-interval (+ 1 low) high))))
+;(enumerate-interval 2 7)
+
+(define (enumerate-tree t)
+  (cond ((null? t) t)
+        ((list? t) (append (enumerate-tree (car t))
+                         (enumerate-tree (cdr t))))
+        (else (list t))))
+
+(enumerate-tree (list 1 (list 2 (list 3 4)) 5))

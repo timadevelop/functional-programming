@@ -1,0 +1,78 @@
+#lang racket
+
+(require rackunit rackunit/text-ui)
+
+(define (expt-iter base exp)
+  (define (helper iter last)
+    (if (> iter exp)
+        last
+        (helper (+ iter 1) (* last base))
+  ))
+  (if (= exp 0)
+      1
+      (helper 1 1))) 
+
+(define expt-iter-tests
+  (test-suite
+   "Tests for expt-iter"
+
+   (check = (expt-iter 2 0) 1)
+   (check = (expt-iter 2 1) 2)
+   (check = (expt-iter 2 2) 4)
+   (check = (expt-iter 3 2) 9)
+   (check = (expt-iter 5 3) 125)
+   (check = (expt-iter 2 10) 1024)
+   (check = (expt-iter -2 10) 1024)
+   (check = (expt-iter -2 11) -2048)))
+
+(run-tests expt-iter-tests)
+;;
+(define (sum-iter start end)
+  (define (helper iter last)
+    (if (> iter end) last
+        (helper (+ iter 1) (+ last iter)))
+    )
+  (if (> start end) 0
+      (helper start 0)
+  )
+)
+;;
+(define (fact-iter n)
+  (define (iter i last)
+    (if (> i n)
+        last
+        (iter (+ 1 i) (* last i))
+     ))
+
+  (iter 1 1)
+  )
+
+;;iterations
+
+;; 
+(define (sum start end)
+  (if (> start end) 0
+      (+ start (sum (+ start 1) end))))
+;;
+(define (signum n)
+  (cond ((= n 0) 0)
+        ((< n 0) -1)
+        ((> n 0) 1)))
+;;
+(define (factorial x)
+  (if (= x 0)
+      1
+      (* x (factorial (- x 1)))))
+;;;;
+(define (expt x n)
+  (if (= n 0)
+      1
+      (* x (expt x (- n 1)))))
+;;;;;
+;;;; ex 1
+;;;;;
+(define (even? x)
+  (= 0 (remainder x 2)))
+
+(define (odd? x) (not (even? x)))
+
